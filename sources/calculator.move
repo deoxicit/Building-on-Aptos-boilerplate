@@ -1,25 +1,28 @@
-module metaschool::calculator_l05
+module metaschool::calculator
 {
-    use std::string::{String,utf8};
     use std::signer;
 
-    struct Message has key
-    {
-        my_message : String
+    struct Calculator has key {
+        result: u64,
     }
 
-    public entry fun create_message(account: &signer)
-    {
-        if (!exists<Message>(signer::address_of(account))){
-            let message = Message {
-                my_message : utf8(b"I am a Calculator Dapp")            
-            };
-            move_to(account,message);    
+    fun create_calculator(account: &signer) acquires Calculator {
+    
+			  // We check if the signer address already has a Calculator resource
+			  // associated to it
+        if (exists<Calculator>(signer::address_of(account))){
+        
+		        // Here, we are using borrow_global_mut to fetch the Calculator resource
+		        // associated with the signer address
+            let calculator = borrow_global_mut<Calculator>(signer::address_of(account));
+            calculator.result = 0;
         }
-    }
-
-    public fun get_message(account: &signer): String acquires Message {
-        let calculator = borrow_global<Message>(signer::address_of(account));
-        calculator.my_message
+        else {
+        
+	        // If no Calculator resource is present for the input signer address
+	        // then we create a new instance of a resource
+	        let calculator = Calculator { result: 0 };
+	        move_to(account, calculator);
+        }
     }
 }
